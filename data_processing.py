@@ -1,6 +1,5 @@
 import serial
-from utils import get_rp_data, read_data, send_command, check_switch, process_position, \
-    read_data_return
+from utils import get_rp_data, read_data, send_command, process_position
 from utils import update_user_tests_counter
 
 RESET_SIGNAL = b'\x80'

@@ -233,9 +233,9 @@ class MainWindow(QMainWindow):
         self.table_widget_position_2.clearContents()
 
         self.fill_table_with_data(self.table_widget_position_1, relay_protection["position_1"],
-                                  relay_protection["permissible_voltage_drop"])
+                                  relay_protection["permissible_voltage_drop_position_1"])
         self.fill_table_with_data(self.table_widget_position_2, relay_protection["position_2"],
-                                  relay_protection["permissible_voltage_drop"])
+                                  relay_protection["permissible_voltage_drop_position_2"])
 
     def fill_table_with_data(self, table_widget, position_data, voltage_drop):
         # Здесь наполнение таблицы данными

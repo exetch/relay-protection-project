@@ -45,26 +45,30 @@ class AddRelayProtectionDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Добавить блок")
-        self.setGeometry(200, 200, 580, 684)
+        self.setGeometry(100, 100, 622, 840)
         self.setFont(QFont("Arial", 10))
 
         self.label_vendor_code = QLabel("Введите артикул блока:", self)
         self.line_edit_vendor_code = QLineEdit(self)
         self.line_edit_vendor_code.setStyleSheet(line_edit_style)
 
-        self.label_voltage_drop = QLabel("Введите допустимое падение напряжения (мВ):", self)
-        self.line_edit_voltage_drop = QLineEdit(self)
-        self.line_edit_voltage_drop.setStyleSheet(line_edit_style)
+        self.label_voltage_drop_1 = QLabel("Введите допустимое падение напряжения в 1-м положении (мВ):", self)
+        self.line_edit_voltage_drop_1 = QLineEdit(self)
+        self.line_edit_voltage_drop_1.setStyleSheet(line_edit_style)
+
+        self.label_voltage_drop_2 = QLabel("Введите допустимое падение напряжения во 2-м положении (мВ):", self)
+        self.line_edit_voltage_drop_2 = QLineEdit(self)
+        self.line_edit_voltage_drop_2.setStyleSheet(line_edit_style)
 
         self.button_save_relay_protection = QPushButton("Сохранить блок", self)
         self.button_save_relay_protection.setStyleSheet(button_style)
 
-        self.table1 = QTableWidget(10, 2)
+        self.table1 = QTableWidget(25, 2)
         self.table1.setHorizontalHeaderLabels(["Контакт 1", "Контакт 2"])
         self.table1.verticalHeader().setVisible(False)
         self.table1.setStyleSheet(table_style)
 
-        self.table2 = QTableWidget(10, 2)
+        self.table2 = QTableWidget(25, 2)
         self.table2.setHorizontalHeaderLabels(["Контакт 1", "Контакт 2"])
         self.table2.verticalHeader().setVisible(False)
         self.table2.setStyleSheet(table_style)
@@ -74,8 +78,10 @@ class AddRelayProtectionDialog(QDialog):
         layout.setSpacing(10)
         layout.addWidget(self.label_vendor_code)
         layout.addWidget(self.line_edit_vendor_code)
-        layout.addWidget(self.label_voltage_drop)
-        layout.addWidget(self.line_edit_voltage_drop)
+        layout.addWidget(self.label_voltage_drop_1)
+        layout.addWidget(self.line_edit_voltage_drop_1)
+        layout.addWidget(self.label_voltage_drop_2)
+        layout.addWidget(self.line_edit_voltage_drop_2)
 
         tables_layout = QHBoxLayout()
         tables_layout.setContentsMargins(5, 5, 5, 5)
@@ -108,7 +114,8 @@ class AddRelayProtectionDialog(QDialog):
 
         self.relay_protection_data = {
             "vendor_code": "",
-            "permissible_voltage_drop": 10,
+            "permissible_voltage_drop_position_1": 10,
+            "permissible_voltage_drop_position_2": 10,
             "position_1": [],
             "position_2": []
         }
@@ -118,8 +125,14 @@ class AddRelayProtectionDialog(QDialog):
     def save_relay_protection(self):
         try:
             self.relay_protection_data["vendor_code"] = self.line_edit_vendor_code.text()
-            voltage_drop_text = self.line_edit_voltage_drop.text()
-            self.relay_protection_data["permissible_voltage_drop"] = int(voltage_drop_text) if voltage_drop_text else 10
+
+            voltage_drop_text_1 = self.line_edit_voltage_drop_1.text()
+            self.relay_protection_data["permissible_voltage_drop_position_1"] = int(
+                voltage_drop_text_1) if voltage_drop_text_1 else 10
+
+            voltage_drop_text_2 = self.line_edit_voltage_drop_2.text()
+            self.relay_protection_data["permissible_voltage_drop_position_2"] = int(
+                voltage_drop_text_2) if voltage_drop_text_2 else 10
 
             for table, position in [(self.table1, "position_1"), (self.table2, "position_2")]:
                 contacts = []
@@ -178,7 +191,8 @@ class EditRelayProtectionDialog(AddRelayProtectionDialog):
                 data = json.load(file)
             relay_protection = next((rp for rp in data if rp['vendor_code'] == vendor_code), None)
             if relay_protection:
-                self.line_edit_voltage_drop.setText(str(relay_protection['permissible_voltage_drop']))
+                self.line_edit_voltage_drop_1.setText(str(relay_protection['permissible_voltage_drop_position_1']))
+                self.line_edit_voltage_drop_2.setText(str(relay_protection['permissible_voltage_drop_position_2']))
                 # Заполняем таблицу position_1
                 for i, contact_pair in enumerate(relay_protection['position_1']):
                     self.table1.setItem(i, 0, QTableWidgetItem(str(contact_pair[0])))
@@ -197,8 +211,10 @@ class EditRelayProtectionDialog(AddRelayProtectionDialog):
     def save_relay_protection(self):
         # Обновляем данные из интерфейса
         self.relay_protection_data["vendor_code"] = self.line_edit_vendor_code.text()
-        voltage_drop_text = self.line_edit_voltage_drop.text()
-        self.relay_protection_data["permissible_voltage_drop"] = int(voltage_drop_text) if voltage_drop_text else 10
+        voltage_drop_1 = self.line_edit_voltage_drop_1.text()
+        voltage_drop_2 = self.line_edit_voltage_drop_2.text()
+        self.relay_protection_data["permissible_voltage_drop_position_1"] = int(voltage_drop_1) if voltage_drop_1 else 10
+        self.relay_protection_data["permissible_voltage_drop_position_2"] = int(voltage_drop_2) if voltage_drop_2 else 10
 
         # Собираем контакты из таблиц
         for table, position_key in [(self.table1, "position_1"), (self.table2, "position_2")]:

@@ -78,50 +78,15 @@ def read_voltage_drop(ser):
     return voltage_drop
 
 
-
-def read_data_return(ser, expected_data, stop_event):
-    while True:
-        if stop_event.is_set() or keyboard.is_pressed(' '):
-            sleep(0.05)
-            break
-
-        if ser.in_waiting > 0:
-            data = ser.read()
-            if data == expected_data:
-                break
-            elif data == RESET_SIGNAL:
-                print('Сигнал сброс получен!')
-                return RESET_SIGNAL
-
-    return expected_data
-
 def send_command(instance, ser, command):
-    # instance.add_message_to_widget('типа отправляем команду')
-    # sleep(2)
     sleep(0.05)
     ser.write(command)
-
-
-def check_switch(ser, stop_event):
-    while True:
-        if stop_event.is_set() or keyboard.is_pressed(' '):
-            sleep(0.05)
-            break
-
-        if ser.in_waiting > 0:
-            data = ser.read()
-            if data == NEXT_POSITION_SIGNAL:
-                break
-            elif data == RESET_SIGNAL:
-                print('Сигнал сброс получен!')
-                return RESET_SIGNAL
-            return data
 
 def process_position(ser, relay_protection_data, position, instance):
     measured_data = {}
     voltage_drop_issues = {} # Словарь для хранения превышений падения напряжения
 
-    for i in range(1, 20):  # Перебор 20 контактов
+    for i in range(1, 26):  # Перебор 26 контактов
         first_contact_byte = ser.read()
         first_contact_number = first_contact_byte[0] & 0x3F
 
@@ -137,10 +102,8 @@ def process_position(ser, relay_protection_data, position, instance):
 
             if contact_state == 1:  # Если контакты замкнуты
                 voltage_drop = read_voltage_drop(ser)
-                instance.add_message_to_widget(f'падение напряжение в паре {first_contact_number} - {contact_number}: {voltage_drop} мВ')
-                if voltage_drop > relay_protection_data["permissible_voltage_drop"]:
+                if voltage_drop > relay_protection_data[f"permissible_voltage_drop_position_{position}"]:
                     voltage_drop_issues[(first_contact_number, contact_number)] = voltage_drop
-                    instance.add_message_to_widget(f'падение напряжение в паре {first_contact_number} - {contact_number}: {voltage_drop} мВ')
 
         measured_data[first_contact_number] = contact_status
 
