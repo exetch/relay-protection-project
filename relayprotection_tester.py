@@ -164,20 +164,20 @@ class MainWindow(QMainWindow):
         self.table_widget_position_2 = QTableWidget(self)
 
         # Настройка таблиц для отображения 20 строк и 20 столбцов
-        self.table_widget_position_1.setRowCount(20)
-        self.table_widget_position_1.setColumnCount(20)
-        self.table_widget_position_2.setRowCount(20)
-        self.table_widget_position_2.setColumnCount(20)
+        self.table_widget_position_1.setRowCount(25)
+        self.table_widget_position_1.setColumnCount(25)
+        self.table_widget_position_2.setRowCount(25)
+        self.table_widget_position_2.setColumnCount(25)
 
         # Установка размера ячеек для обеих таблиц
-        for i in range(20):
+        for i in range(25):
             self.table_widget_position_1.setRowHeight(i, 20)
             self.table_widget_position_1.setColumnWidth(i, 20)
             self.table_widget_position_2.setRowHeight(i, 20)
             self.table_widget_position_2.setColumnWidth(i, 20)
 
         # Создание заголовков для строк и столбцов
-        headers = [str(i) for i in range(1, 21)]
+        headers = [str(i) for i in range(1, 25)]
         self.table_widget_position_1.setHorizontalHeaderLabels(headers)
         self.table_widget_position_1.setVerticalHeaderLabels(headers)
         self.table_widget_position_2.setHorizontalHeaderLabels(headers)
