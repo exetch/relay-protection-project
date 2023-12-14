@@ -60,15 +60,19 @@ class AddRelayProtectionDialog(QDialog):
         self.line_edit_voltage_drop_2 = QLineEdit(self)
         self.line_edit_voltage_drop_2.setStyleSheet(line_edit_style)
 
+        self.label_note = QLabel("Примечание: Контакт 1 должен быть меньше Контакта 2", self)
+        self.label_note.setAlignment(Qt.AlignCenter)
+        self.label_note.setStyleSheet("QLabel { color: grey; font-size: 10pt; }")
+
         self.button_save_relay_protection = QPushButton("Сохранить блок", self)
         self.button_save_relay_protection.setStyleSheet(button_style)
 
-        self.table1 = QTableWidget(25, 2)
+        self.table1 = QTableWidget(26, 2)
         self.table1.setHorizontalHeaderLabels(["Контакт 1", "Контакт 2"])
         self.table1.verticalHeader().setVisible(False)
         self.table1.setStyleSheet(table_style)
 
-        self.table2 = QTableWidget(25, 2)
+        self.table2 = QTableWidget(26, 2)
         self.table2.setHorizontalHeaderLabels(["Контакт 1", "Контакт 2"])
         self.table2.verticalHeader().setVisible(False)
         self.table2.setStyleSheet(table_style)
@@ -107,7 +111,7 @@ class AddRelayProtectionDialog(QDialog):
         tables_layout.addLayout(position_2_layout)
 
         layout.addLayout(tables_layout)
-
+        layout.addWidget(self.label_note)
         layout.addWidget(self.button_save_relay_protection)
 
         self.setLayout(layout)
@@ -136,7 +140,7 @@ class AddRelayProtectionDialog(QDialog):
 
             for table, position in [(self.table1, "position_1"), (self.table2, "position_2")]:
                 contacts = []
-                for row in range(20):
+                for row in range(26):
                     contact1_item = table.item(row, 0)
                     contact2_item = table.item(row, 1)
                     if contact1_item is not None and contact2_item is not None:
