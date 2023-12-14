@@ -15,7 +15,7 @@ from users import add_user, del_user
 
 
 class MainWindow(QMainWindow):
-    updateTableSignal = pyqtSignal(int, list, dict, dict)
+    updateTableSignal = pyqtSignal(int, list, dict, dict, dict)
 
     def __init__(self):
         super().__init__()
@@ -163,25 +163,45 @@ class MainWindow(QMainWindow):
         self.table_widget_position_1 = QTableWidget(self)
         self.table_widget_position_2 = QTableWidget(self)
 
-        # Настройка таблиц для отображения 20 строк и 20 столбцов
-        self.table_widget_position_1.setRowCount(20)
-        self.table_widget_position_1.setColumnCount(20)
-        self.table_widget_position_2.setRowCount(20)
-        self.table_widget_position_2.setColumnCount(20)
+        # Настройка таблиц для отображения 25 строк и 25 столбцов
+        self.table_widget_position_1.setRowCount(26)
+        self.table_widget_position_1.setColumnCount(26)
+        self.table_widget_position_2.setRowCount(26)
+        self.table_widget_position_2.setColumnCount(26)
 
         # Установка размера ячеек для обеих таблиц
-        for i in range(20):
-            self.table_widget_position_1.setRowHeight(i, 20)
-            self.table_widget_position_1.setColumnWidth(i, 20)
-            self.table_widget_position_2.setRowHeight(i, 20)
-            self.table_widget_position_2.setColumnWidth(i, 20)
-
+        for i in range(26):
+            self.table_widget_position_1.setRowHeight(i, 25)
+            self.table_widget_position_1.setColumnWidth(i, 25)
+            self.table_widget_position_2.setRowHeight(i, 25)
+            self.table_widget_position_2.setColumnWidth(i, 25)
         # Создание заголовков для строк и столбцов
-        headers = [str(i) for i in range(1, 21)]
+        headers = [str(i) for i in range(1, 26)]
         self.table_widget_position_1.setHorizontalHeaderLabels(headers)
         self.table_widget_position_1.setVerticalHeaderLabels(headers)
         self.table_widget_position_2.setHorizontalHeaderLabels(headers)
         self.table_widget_position_2.setVerticalHeaderLabels(headers)
+
+        blue_background_style = """
+        QHeaderView::section {
+            background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                              stop:0 #6db9e8, stop: 0.5 #5daee4, stop:1 #4da0df);
+            padding: 4px;
+            border: 1px solid #6db9e8;
+            font-size: 12pt;
+            font-weight: bold;
+            color: white;
+            height: 28px;
+            text-align: center;
+            box-shadow: 0 4px 6px -6px #222;
+        }
+        """
+
+        self.table_widget_position_1.horizontalHeader().setStyleSheet(blue_background_style)
+        self.table_widget_position_1.verticalHeader().setStyleSheet(blue_background_style)
+
+        self.table_widget_position_2.horizontalHeader().setStyleSheet(blue_background_style)
+        self.table_widget_position_2.verticalHeader().setStyleSheet(blue_background_style)
 
 
 
@@ -238,13 +258,15 @@ class MainWindow(QMainWindow):
                                   relay_protection["permissible_voltage_drop_position_2"])
 
     def fill_table_with_data(self, table_widget, position_data, voltage_drop):
-        # Здесь наполнение таблицы данными
         for contact_pair in position_data:
-            # Получаем номера контактов из пары
+
             contact1, contact2 = map(int, contact_pair)
 
-            # Устанавливаем значение в соответствующую ячейку таблицы
-            table_widget.setItem(contact1 - 1, contact2 - 1, QTableWidgetItem(str(voltage_drop)))
+            item = QTableWidgetItem(str(voltage_drop))
+
+            item.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+
+            table_widget.setItem(contact1 - 1, contact2 - 1, item)
     def init_layout(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -254,8 +276,10 @@ class MainWindow(QMainWindow):
         layout_table = QHBoxLayout()
         layout_table.addWidget(self.table_widget_position_1)
         layout_table.addWidget(self.table_widget_position_2)
-        self.setLayout(layout_table)
 
+        self.setLayout(layout_table)
+        self.table_widget_position_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table_widget_position_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         main_layout.addWidget(self.vendor_selection)
         main_layout.addLayout(layout_table)
 
@@ -271,7 +295,7 @@ class MainWindow(QMainWindow):
 
         for color, (label_text, color_code) in color_mapping.items():
             color_rect = QLabel()
-            color_rect.setFixedSize(30, 30)
+            color_rect.setFixedSize(25, 25)
             color_rect.setStyleSheet(f"background-color: {color_code};")
 
             color_label = QLabel(label_text)
@@ -284,13 +308,15 @@ class MainWindow(QMainWindow):
         message_scroll_area.setWidgetResizable(True)
         message_scroll_area.setWidget(self.message_widget)
 
+        desired_height = 200
+        message_scroll_area.setFixedHeight(desired_height)
+        # message_scroll_area.setMinimumHeight(desired_height)
+        # message_scroll_area.setMaximumHeight(desired_height)
+
         main_layout.addWidget(message_scroll_area)
 
         main_layout.setContentsMargins(5, 5, 5, 5)
         main_layout.setSpacing(10)
-
-        self.table_widget_position_1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.table_widget_position_2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def open_add_switch_dialog(self):
         dialog = AddRelayProtectionDialog(self)
@@ -346,8 +372,8 @@ class MainWindow(QMainWindow):
     def clear_message_widget(self):
         QMetaObject.invokeMethod(self.message_widget, "clear")
 
-    @pyqtSlot(int, list, dict, dict)
-    def update_table_with_results_slot(self, position, switch_data, measured_data, voltage_drop_issues):
+    @pyqtSlot(int, list, dict, dict, dict)
+    def update_table_with_results_slot(self, position, switch_data, measured_data, voltage_drop_issues, measured_voltage_drops):
         all_contacts_correct = True
 
         table_widget = self.table_widget_position_1 if position == 1 else self.table_widget_position_2
@@ -358,13 +384,16 @@ class MainWindow(QMainWindow):
             if item is not None:
                 if measured_data[contact1][contact2] == 1:
                     item.setBackground(QColor("green"))
-                    # Устанавливаем значение падения напряжения, если оно есть в voltage_drop_issues
+                    voltage_drop = measured_voltage_drops.get((contact1, contact2), 0)
+                    item.setText(str(voltage_drop))
+                    item.setTextAlignment(Qt.AlignCenter)
                     if (contact1, contact2) in voltage_drop_issues:
                         font = item.font()
                         font.setBold(True)
                         item.setFont(font)
                         item.setForeground(QBrush(QColor("red")))
-                        item.setText(str(voltage_drop_issues[(contact1, contact2)]))
+                    else:
+                        item.setForeground(QBrush(QColor("black")))
                 else:
                     item.setBackground(QColor("red"))
                     all_contacts_correct = False
@@ -377,6 +406,8 @@ class MainWindow(QMainWindow):
                         item = QTableWidgetItem()
                         table_widget.setItem(contact1 - 1, contact2 - 1, item)
                     item.setBackground(QColor("yellow"))
+                    voltage_drop = measured_voltage_drops.get((contact1, contact2), 0)
+                    item.setText(str(voltage_drop))
                     all_contacts_correct = False
                     item.setTextAlignment(Qt.AlignCenter)
 

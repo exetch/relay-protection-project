@@ -1,5 +1,8 @@
+import traceback
+from time import sleep
+
 import serial
-from utils import get_rp_data, read_data, send_command, process_position
+from utils import get_rp_data, send_command, process_position, read_data
 from utils import update_user_tests_counter
 
 RESET_SIGNAL = b'\x80'
@@ -19,16 +22,19 @@ def data_processing(port, vendor_code, stop_event, instance, username):
     baudrate = 256000
     ser = serial.Serial(port, baudrate)
     while True:
+        sleep(0.05)
+        instance.clear_message_widget()
+        instance.retrieve_rp_data()
         instance.add_message_to_widget('Старт теста! Нажмите пробел')
-        read_data(ser, RESET_SIGNAL, stop_event)
-        if stop_event.is_set():
-            stop_event.clear()
-            break
         instance.tests_counter[username] = instance.tests_counter.get(username, 0) + 1
         update_user_tests_counter(username, instance.tests_counter[username])
-        instance.clear_message_widget()
+        read_data(stop_event)
+        if stop_event.is_set():
+            stop_event.clear()
+            instance.clear_message_widget()
+            break
         instance.update_tests_counter_label()
-        instance.retrieve_rp_data()
+
         while True:
             if stop_event.is_set():
                 stop_event.clear()
@@ -48,30 +54,40 @@ def data_processing(port, vendor_code, stop_event, instance, username):
                     incorrect_positions.append(position)
 
                 if position == 2:
+                    print('before exit')
                     break
+                sleep(0.05)
                 instance.add_message_to_widget('Нажмите пробел для измерения положения №2')
-                read_data(ser, RESET_SIGNAL, stop_event)
+                read_data(stop_event)
+                instance.clear_message_widget()
                 if stop_event.is_set():
                     break
 
-            if reset_signal_received:
-                instance.tests_counter += 1
-                instance.update_tests_counter_label()
-                instance.retrieve_rp_data()
-                instance.add_message_to_widget('Сигнал сброс получен!')
-                continue
+            #
             if len(correct_positions) == 2:
-                print("Переключатель полностью годен.")
-                instance.add_message_to_widget("\nПереключатель полностью годен.")
-                send_command(ser, CORRECT_ALL_COMMAND)
+                print("block is correct.")
+
+                sleep(0.05)
+                instance.add_message_to_widget("Переключатель полностью годен.")
+                sleep(0.05)
+                instance.add_message_to_widget('\nНажмите пробел для продолжения тестирования...')
+                read_data(stop_event)
+                instance.clear_message_widget()
+
             else:
                 print("Переключатель негоден. Некорректные положения:")
+                sleep(0.05)
                 instance.add_message_to_widget("\nПереключатель негоден. Некорректные положения:")
                 for position in range(1, 3):
                     if position in incorrect_positions:
                         print(f"Положение {position}")
                         instance.add_message_to_widget(f"Положение {position}")
-
+                sleep(0.05)
+                instance.add_message_to_widget('\nНажмите пробел для продолжения тестирования...')
+                read_data(stop_event)
+                sleep(0.05)
+                instance.clear_message_widget()
             break
     ser.close()
     instance.add_message_to_widget('Порт закрыт, тестирование завершено')
+
