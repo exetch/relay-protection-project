@@ -31,6 +31,7 @@ def data_processing(port, vendor_code, stop_event, instance, username):
         read_data(stop_event)
         if stop_event.is_set():
             stop_event.clear()
+            instance.clear_message_widget()
             break
         instance.update_tests_counter_label()
 

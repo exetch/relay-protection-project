@@ -67,24 +67,24 @@ def check_position(switch_data, measured_data):
     return incorrect_closed, incorrect_opened
 
 
-# def read_data(stop_event):
-#     while True:
-#         try:
-#             if stop_event.is_set() or keyboard.is_pressed(' '):
-#                 sleep(0.2)
-#                 break
-#         except Exception as e:
-#             print(f"Произошла ошибка: {e}")
-#             traceback.print_exc()  # Вывести трассировку стека
 def read_data(stop_event):
-    try:
-        keyboard.wait(' ')
-        print("space is pressed.")
-    except keyboard.KeyboardEvent as e:
-        if e.event_type == keyboard.KEY_DOWN:
+    while True:
+        try:
+            if stop_event.is_set() or keyboard.is_pressed(' '):
+                sleep(0.2)
+                break
+        except Exception as e:
             print(f"Произошла ошибка: {e}")
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+            traceback.print_exc()  # Вывести трассировку стека
+# def read_data(stop_event):
+#     try:
+#         stop_event.is_set() or keyboard.wait(' ')
+#         print("space is pressed.")
+#     except keyboard.KeyboardEvent as e:
+#         if e.event_type == keyboard.KEY_DOWN:
+#             print(f"Произошла ошибка: {e}")
+#     except Exception as e:
+#         print(f"Произошла ошибка: {e}")
 
 
 def read_voltage_drop(ser, position):
@@ -224,15 +224,15 @@ def process_position(ser, relay_protection_data, position, instance):
         return position
     else:
         print(f"Положение {position} собрано некорректно. Некорректные контакты:")
-        sleep(0.1)
+        sleep(0.05)
         instance.add_message_to_widget(f"\nПоложение {position} собрано некорректно. Некорректные контакты:")
         for closed_contact in incorrect_closed:
             print(f"Замкнуты контакты {closed_contact[0]} и {closed_contact[1]}")
-            sleep(0.1)
+            sleep(0.05)
             instance.add_message_to_widget(f"Замкнуты контакты {closed_contact[0]} и {closed_contact[1]}")
         for opened_contact in incorrect_opened:
             print(f"Разомкнуты контакты {opened_contact[0]} и {opened_contact[1]}")
-            sleep(0.1)
+            sleep(0.05)
             instance.add_message_to_widget(f"Разомкнуты контакты {opened_contact[0]} и {opened_contact[1]}")
         for contact_pair, voltage in voltage_drop_issues.items():
             print(f"Контакты {contact_pair[0]} и {contact_pair[1]} с падением напряжения {voltage} мВ")
